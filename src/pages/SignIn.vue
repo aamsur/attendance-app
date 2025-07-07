@@ -2,7 +2,7 @@
   <ion-page>
     <ion-content class="ion-padding">
       <div class="login-container">
-        <h2 class="login-title">Sign In</h2>
+        <h2 class="login-title">Sign In Presensia</h2>
 
         <form @submit.prevent="handleLogin">
           <div class="ion-margin-bottom">
@@ -79,7 +79,7 @@ const handleLogin = () => {
 
   setUserType(userType)
   if (userType === "tabs") {
-    router.push("/tabs/home");
+    router.push("/tabs/check-in");
   } else {
     router.push("/landing");
   }

@@ -2,11 +2,11 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-title>Ionic Vue</ion-title>
+        <ion-title>Attendance App</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
-      <h1>Welcome to Ionic Vue!</h1>
+      <h1>Welcome!</h1>
     </ion-content>
   </ion-page>
 </template>

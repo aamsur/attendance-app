@@ -36,7 +36,7 @@
             </ion-item>
             <ion-item>
               <ion-label>Position</ion-label>
-              <ion-note slot="end">Head of Sales and Marketing)</ion-note>
+              <ion-note slot="end">Head of Sales and Marketing</ion-note>
             </ion-item>
             <ion-item>
               <ion-label>Location</ion-label>
@@ -54,7 +54,7 @@
           <ion-list>
             <ion-item>
               <ion-label>Email</ion-label>
-              <ion-note slot="end">jimmy.rianto@unifam.com</ion-note>
+              <ion-note slot="end">james@ai.com</ion-note>
             </ion-item>
             <ion-item>
               <ion-label>Phone</ion-label>

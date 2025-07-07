@@ -20,7 +20,7 @@
         <ion-button
           expand="block"
           color="success"
-          :disabled="tapInTime !== '' || isOutsideArea"
+          :disabled="isOutsideArea || tapInTime !== ''"
           @click="handleTapIn"
         >
           Tap In
@@ -30,7 +30,7 @@
           expand="block"
           color="warning"
           class="ion-margin-top"
-          :disabled="tapOutTime !== '' || isOutsideArea"
+          :disabled="isOutsideArea || tapOutTime !== ''"
           @click="handleTapOut"
         >
           Tap Out
@@ -62,6 +62,13 @@ import {
 } from "@ionic/vue";
 import { ref } from "vue";
 import L from "leaflet";
+delete (L.Icon.Default.prototype as any)._getIconUrl
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
+  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
+  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
+})
 
 const officeLat = -6.187717333029827;
 const officeLng = 106.68965962663124;
@@ -71,7 +78,7 @@ const tapInTime = ref("");
 const tapOutTime = ref("");
 const locationMessage = ref("Checking your location...");
 const isWithinArea = ref(false);
-const isOutsideArea = ref(false);
+const isOutsideArea = ref(true);
 
 let mapInstance: L.Map | null = null;
 
