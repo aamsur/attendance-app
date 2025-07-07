@@ -5,7 +5,7 @@
         <h2 class="login-title">Sign In Presensia</h2>
 
         <form @submit.prevent="handleLogin">
-          <div class="ion-margin-bottom">
+          <div class="input-wrapper">
             <ion-input
               class="form-input"
               v-model="username"
@@ -17,7 +17,7 @@
             />
           </div>
 
-          <div class="ion-margin-bottom">
+          <div class="input-wrapper">
             <ion-input
               class="form-input"
               v-model="password"
@@ -74,7 +74,6 @@ const handleLogin = () => {
   }
 
   sessionStorage.setItem("userType", userType);
-
   console.log("Logged in as:", username.value, "| Type:", userType);
 
   setUserType(userType)
@@ -85,13 +84,8 @@ const handleLogin = () => {
   }
 };
 
-const navigateToRegister = () => {
-  router.push("/register");
-};
-
-const navigateToForgot = () => {
-  router.push("/forgot-password");
-};
+const navigateToRegister = () => router.push("/register");
+const navigateToForgot = () => router.push("/forgot-password");
 </script>
 
 <style scoped>
@@ -100,13 +94,13 @@ ion-content {
 }
 
 ion-input.form-input {
-  --highlight-color-focused: var(--ion-color-primary);
+  --border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+ion-input.form-input:hover {
   --border-color: var(--ion-color-primary);
   --border-radius: 8px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  background: #fff;
-  margin-bottom: 16px;
 }
 
 .login-container {

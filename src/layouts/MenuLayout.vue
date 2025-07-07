@@ -4,13 +4,14 @@
     <ion-menu
       content-id="main-content"
       class="chatgpt-sidebar"
-      swipe-gesture="false"
+      :swipeGesture="false"
     >
       <ion-header class="sidebar-header">
         <ion-toolbar color="primary">
           <ion-title class="sidebar-title">Presensia</ion-title>
         </ion-toolbar>
       </ion-header>
+
       <ion-content class="sidebar-content">
         <ion-list class="sidebar-list">
           <ion-item
@@ -18,22 +19,25 @@
             router-direction="root"
             class="sidebar-item"
             lines="none"
-            >Home</ion-item
           >
+            Home
+          </ion-item>
           <ion-item
             router-link="/reports"
             router-direction="root"
             class="sidebar-item"
             lines="none"
-            >Reports</ion-item
           >
+            Reports
+          </ion-item>
           <ion-item
             router-link="/profile"
             router-direction="root"
             class="sidebar-item"
             lines="none"
-            >Profile</ion-item
           >
+            Profile
+          </ion-item>
         </ion-list>
       </ion-content>
     </ion-menu>
@@ -58,26 +62,29 @@ import {
 </script>
 
 <style scoped>
-.sidebar-item {
-  font-size: 13.5px;       /* Smaller font */
+/* Sidebar item base style */
+.sidebar-item::part(native) {
+  font-size: 13.5px;
   font-weight: 500;
   border-radius: 4px;
-  --background: transparent;
+  background: transparent;
   transition: background 0.2s ease;
   line-height: 1.3;
   min-height: unset;
-  cursor: pointer; /* 👈 Makes it feel clickable */
+  cursor: pointer;
+  padding: 8px 12px;
 }
 
-.sidebar-item:hover {
-  --background: #40414f;
+/* Hover effect */
+.sidebar-item:hover::part(native) {
+  background: #40414f;
   color: #ececf1;
 }
 
-.sidebar-item.ion-activated {
-  --background: #202123;
+/* Activated route styling */
+.sidebar-item.ion-activated::part(native) {
+  background: #202123;
   font-weight: 600;
   border-left: 3px solid #10a37f;
 }
 </style>
-

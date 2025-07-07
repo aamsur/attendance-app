@@ -7,17 +7,11 @@
   --ion-color-danger: #eb445a;
   --ion-color-dark: #222428;
   --ion-color-medium: #92949c;
-  --ion-color-light: #f4f5f8f5;
+  --ion-color-light: rgba(244, 245, 248, 0.96);
 
   --dashboard-bg: #f9fafa;
   --card-bg: #ffffff;
   --dashboard-accent: #f1f3f5;
-}
-
-ion-input {
-  --highlight-color-focused: var(--ion-color-primary);
-  --border-color: var(--ion-color-secondary);
-  --border-width: 1px;
 }
 
 .header-noshadow {

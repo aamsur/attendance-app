@@ -93,13 +93,13 @@ ion-content {
 }
 
 ion-input.form-input {
-  --highlight-color-focused: var(--ion-color-primary);
+  --border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+ion-input.form-input:hover {
   --border-color: var(--ion-color-primary);
   --border-radius: 8px;
-  --padding-start: 12px;
-  --padding-end: 12px;
-  background: #fff;
-  margin-bottom: 16px;
 }
 
 .login-container {
