@@ -3,6 +3,7 @@
     <div ref="gestureArea" class="gesture-area">
       <ion-tabs>
         <ion-router-outlet />
+
         <ion-tab-bar slot="bottom">
           <ion-tab-button tab="home" href="/tabs/home">
             <ion-icon :icon="homeOutline" />
@@ -33,6 +34,7 @@
     </div>
   </ion-page>
 </template>
+
 <script setup lang="ts">
 import {
   IonPage,
@@ -43,6 +45,7 @@ import {
   IonLabel,
   IonRouterOutlet,
 } from "@ionic/vue";
+
 import {
   homeOutline,
   calendarOutline,
@@ -51,12 +54,12 @@ import {
   personCircleOutline,
 } from "ionicons/icons";
 
-import { onMounted, ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useIonRouter } from "@ionic/vue";
 import { useRoute } from "vue-router";
 import { createGesture } from "@ionic/core";
 
-// List of tab routes in order
+// Ordered tab routes
 const tabRoutes = [
   "/tabs/home",
   "/tabs/records",
@@ -67,24 +70,25 @@ const tabRoutes = [
 
 const gestureArea = ref<HTMLElement | null>(null);
 const router = useIonRouter();
-const route = useRoute(); // 👈 Get current route object
+const route = useRoute();
 
 onMounted(() => {
   const gesture = createGesture({
     el: gestureArea.value!,
-    threshold: 15,
     gestureName: "swipe-tabs",
+    threshold: 15,
     onEnd: (ev) => {
-      const currentPath = route.path; // ✅ FIXED: use route.path
+      const currentPath = route.path;
       const currentIndex = tabRoutes.indexOf(currentPath);
 
       if (ev.deltaX < -50 && currentIndex < tabRoutes.length - 1) {
         router.push(tabRoutes[currentIndex + 1]);
       } else if (ev.deltaX > 50 && currentIndex > 0) {
-        router.push(tabRoutes[currentIndex - 1]);
+        router.back(); // go back if route is in history
       }
     },
   });
+
   gesture.enable(true);
 });
 </script>

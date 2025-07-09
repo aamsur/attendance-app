@@ -104,7 +104,6 @@ const { logout } = useAuth();
 
 const handleSignOut = () => {
   logout(); // ✅ updates layout and session
-  router.replace("/signin");
 };
 </script>
 

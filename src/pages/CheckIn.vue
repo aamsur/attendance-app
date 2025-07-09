@@ -20,7 +20,7 @@
         <ion-button
           expand="block"
           color="success"
-          :disabled="isOutsideArea || tapInTime !== ''"
+          :disabled="tapInTime !== '' || tapOutTime !== ''"
           @click="handleTapIn"
         >
           Tap In
@@ -30,19 +30,15 @@
           expand="block"
           color="warning"
           class="ion-margin-top"
-          :disabled="isOutsideArea || tapOutTime !== ''"
+          :disabled="tapOutTime !== ''"
           @click="handleTapOut"
         >
           Tap Out
         </ion-button>
 
         <div class="timestamps" v-if="tapInTime || tapOutTime">
-          <p v-if="tapInTime">
-            🕒 Tap In at: <strong>{{ tapInTime }}</strong>
-          </p>
-          <p v-if="tapOutTime">
-            🕒 Tap Out at: <strong>{{ tapOutTime }}</strong>
-          </p>
+          <p v-if="tapInTime">🕒 Tap In at: <strong>{{ tapInTime }}</strong></p>
+          <p v-if="tapOutTime">🕒 Tap Out at: <strong>{{ tapOutTime }}</strong></p>
         </div>
       </div>
     </ion-content>
@@ -64,7 +60,7 @@ import {
 import { ref } from "vue";
 import L from "leaflet";
 
-// 🧭 Leaflet setup
+// 📍 Fix Leaflet marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: new URL("leaflet/dist/images/marker-icon-2x.png", import.meta.url).href,
@@ -76,7 +72,7 @@ L.Icon.Default.mergeOptions({
 // const officeLng = 106.68965962663124;
 const officeLat = -6.287754;
 const officeLng = 106.615757;
-const allowedRadius = 100;
+const allowedRadius = 100; // meters
 
 const tapInTime = ref("");
 const tapOutTime = ref("");
@@ -89,28 +85,53 @@ let mapInstance: L.Map | null = null;
 const formatTime = () =>
   new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
+const showWarningConfirm = async (action: 'tap-in' | 'tap-out') => {
+  const alert = await alertController.create({
+    header: "Outside Allowed Area",
+    message: `You are outside the allowed location. Are you sure you want to ${action === 'tap-in' ? 'Tap In' : 'Tap Out'}?`,
+    buttons: [
+      {
+        text: "Cancel",
+        role: "cancel",
+      },
+      {
+        text: "Proceed",
+        handler: () => {
+          if (action === 'tap-in') {
+            tapInTime.value = formatTime();
+          } else {
+            tapOutTime.value = formatTime();
+          }
+        },
+      },
+    ],
+  });
+  await alert.present();
+};
+
 const handleTapIn = () => {
-  tapInTime.value = formatTime();
+  if (isOutsideArea.value) {
+    showWarningConfirm("tap-in");
+  } else {
+    tapInTime.value = formatTime();
+  }
 };
 
 const handleTapOut = () => {
-  tapOutTime.value = formatTime();
+  if (isOutsideArea.value) {
+    showWarningConfirm("tap-out");
+  } else {
+    tapOutTime.value = formatTime();
+  }
 };
 
-function getDistanceFromLatLonInMeters(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-) {
+function getDistanceFromLatLonInMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371e3;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLon = (lon2 - lon1) * (Math.PI / 180);
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) ** 2;
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -118,13 +139,9 @@ function getDistanceFromLatLonInMeters(
 const presentLocationAlert = async () => {
   const alert = await alertController.create({
     header: "Location Access Denied",
-    message:
-      "Location permission is required to check in. Please enable it in your browser settings.",
+    message: "Location permission is required to check in. Please enable it in your browser settings.",
     buttons: [
-      {
-        text: "Cancel",
-        role: "cancel",
-      },
+      { text: "Cancel", role: "cancel" },
       {
         text: "Go to Settings",
         handler: () => {
@@ -142,7 +159,16 @@ onIonViewDidEnter(() => {
     mapInstance = null;
   }
 
-  mapInstance = L.map("map").setView([0, 0], 15);
+  mapInstance = L.map("map", {
+  zoomControl: false,
+  scrollWheelZoom: false,
+  doubleClickZoom: false,
+  dragging: false,
+  touchZoom: false,
+  boxZoom: false,
+  keyboard: false,
+  tap: false
+}).setView([0, 0], 15);
 
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors",
@@ -161,22 +187,12 @@ onIonViewDidEnter(() => {
         .bindPopup("You are here!")
         .openPopup();
 
-      const distance = getDistanceFromLatLonInMeters(
-        lat,
-        lng,
-        officeLat,
-        officeLng
-      );
-
-      if (distance <= allowedRadius) {
-        isWithinArea.value = true;
-        isOutsideArea.value = false;
-        locationMessage.value = "✅ You are within the allowed area.";
-      } else {
-        isWithinArea.value = false;
-        isOutsideArea.value = true;
-        locationMessage.value = "❌ You are outside the allowed check-in zone.";
-      }
+      const distance = getDistanceFromLatLonInMeters(lat, lng, officeLat, officeLng);
+      isWithinArea.value = distance <= allowedRadius;
+      isOutsideArea.value = !isWithinArea.value;
+      locationMessage.value = isWithinArea.value
+        ? "✅ You are within the allowed area."
+        : "⚠️ You are outside the allowed check-in zone.";
     },
     (error) => {
       if (error.code === 1) {
