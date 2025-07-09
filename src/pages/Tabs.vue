@@ -1,6 +1,6 @@
 <template>
   <ion-page>
-    <div ref="gestureArea" class="gesture-area">
+    <div ref="gestureArea" class="gesture-area" @touchmove.prevent>
       <ion-tabs>
         <ion-router-outlet />
 
@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+
 import {
   IonPage,
   IonTabs,
@@ -45,7 +46,6 @@ import {
   IonLabel,
   IonRouterOutlet,
 } from "@ionic/vue";
-
 import {
   homeOutline,
   calendarOutline,
@@ -59,7 +59,6 @@ import { useIonRouter } from "@ionic/vue";
 import { useRoute } from "vue-router";
 import { createGesture } from "@ionic/core";
 
-// Ordered tab routes
 const tabRoutes = [
   "/tabs/home",
   "/tabs/records",
@@ -69,22 +68,22 @@ const tabRoutes = [
 ];
 
 const gestureArea = ref<HTMLElement | null>(null);
-const router = useIonRouter();
 const route = useRoute();
+const router = useIonRouter();
 
 onMounted(() => {
   const gesture = createGesture({
     el: gestureArea.value!,
-    gestureName: "swipe-tabs",
     threshold: 15,
+    gestureName: 'swipe-tabs',
     onEnd: (ev) => {
       const currentPath = route.path;
       const currentIndex = tabRoutes.indexOf(currentPath);
 
       if (ev.deltaX < -50 && currentIndex < tabRoutes.length - 1) {
-        router.push(tabRoutes[currentIndex + 1]);
+        router.replace(tabRoutes[currentIndex + 1]); // avoid transition issues
       } else if (ev.deltaX > 50 && currentIndex > 0) {
-        router.back(); // go back if route is in history
+        router.replace(tabRoutes[currentIndex - 1]);
       }
     },
   });
@@ -97,5 +96,6 @@ onMounted(() => {
 .gesture-area {
   height: 100%;
   width: 100%;
+  touch-action: pan-y;
 }
 </style>
