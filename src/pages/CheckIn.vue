@@ -58,20 +58,24 @@ import {
   IonContent,
   IonButton,
   onIonViewDidEnter,
-  onIonViewWillLeave
+  onIonViewWillLeave,
+  alertController,
 } from "@ionic/vue";
 import { ref } from "vue";
 import L from "leaflet";
-delete (L.Icon.Default.prototype as any)._getIconUrl
 
+// 🧭 Leaflet setup
+delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: new URL('leaflet/dist/images/marker-icon-2x.png', import.meta.url).href,
-  iconUrl: new URL('leaflet/dist/images/marker-icon.png', import.meta.url).href,
-  shadowUrl: new URL('leaflet/dist/images/marker-shadow.png', import.meta.url).href,
-})
+  iconRetinaUrl: new URL("leaflet/dist/images/marker-icon-2x.png", import.meta.url).href,
+  iconUrl: new URL("leaflet/dist/images/marker-icon.png", import.meta.url).href,
+  shadowUrl: new URL("leaflet/dist/images/marker-shadow.png", import.meta.url).href,
+});
 
-const officeLat = -6.187717333029827;
-const officeLng = 106.68965962663124;
+// const officeLat = -6.187717333029827;
+// const officeLng = 106.68965962663124;
+const officeLat = -6.287754;
+const officeLng = 106.615757;
 const allowedRadius = 100;
 
 const tapInTime = ref("");
@@ -111,8 +115,28 @@ function getDistanceFromLatLonInMeters(
   return R * c;
 }
 
+const presentLocationAlert = async () => {
+  const alert = await alertController.create({
+    header: "Location Access Denied",
+    message:
+      "Location permission is required to check in. Please enable it in your browser settings.",
+    buttons: [
+      {
+        text: "Cancel",
+        role: "cancel",
+      },
+      {
+        text: "Go to Settings",
+        handler: () => {
+          window.open("https://support.google.com/chrome/answer/142065", "_blank");
+        },
+      },
+    ],
+  });
+  await alert.present();
+};
+
 onIonViewDidEnter(() => {
-  // 🛠 Prevent double-init
   if (mapInstance) {
     mapInstance.remove();
     mapInstance = null;
@@ -155,8 +179,12 @@ onIonViewDidEnter(() => {
       }
     },
     (error) => {
-      isOutsideArea.value = true;
-      locationMessage.value = `❌ Location error: ${error.message}`;
+      if (error.code === 1) {
+        presentLocationAlert();
+      } else {
+        isOutsideArea.value = true;
+        locationMessage.value = `❌ Location error: ${error.message}`;
+      }
     },
     {
       enableHighAccuracy: true,
@@ -166,7 +194,6 @@ onIonViewDidEnter(() => {
   );
 });
 
-// 🧹 Optional Cleanup
 onIonViewWillLeave(() => {
   if (mapInstance) {
     mapInstance.remove();
@@ -226,5 +253,4 @@ ion-button {
 .error {
   color: var(--ion-color-danger);
 }
-
 </style>
