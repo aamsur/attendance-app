@@ -1,9 +1,8 @@
 <template>
   <ion-page>
-    <div ref="gestureArea" class="gesture-area" @touchmove.prevent>
+    <div ref="gestureArea" class="gesture-area">
       <ion-tabs>
         <ion-router-outlet />
-
         <ion-tab-bar slot="bottom">
           <ion-tab-button tab="home" href="/tabs/home">
             <ion-icon :icon="homeOutline" />
@@ -34,9 +33,7 @@
     </div>
   </ion-page>
 </template>
-
 <script setup lang="ts">
-
 import {
   IonPage,
   IonTabs,
@@ -54,11 +51,12 @@ import {
   personCircleOutline,
 } from "ionicons/icons";
 
-import { ref, onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { useIonRouter } from "@ionic/vue";
 import { useRoute } from "vue-router";
 import { createGesture } from "@ionic/core";
 
+// List of tab routes in order
 const tabRoutes = [
   "/tabs/home",
   "/tabs/records",
@@ -68,26 +66,25 @@ const tabRoutes = [
 ];
 
 const gestureArea = ref<HTMLElement | null>(null);
-const route = useRoute();
 const router = useIonRouter();
+const route = useRoute(); // 👈 Get current route object
 
 onMounted(() => {
   const gesture = createGesture({
     el: gestureArea.value!,
     threshold: 15,
-    gestureName: 'swipe-tabs',
+    gestureName: "swipe-tabs",
     onEnd: (ev) => {
-      const currentPath = route.path;
+      const currentPath = route.path; // ✅ FIXED: use route.path
       const currentIndex = tabRoutes.indexOf(currentPath);
 
       if (ev.deltaX < -50 && currentIndex < tabRoutes.length - 1) {
-        router.replace(tabRoutes[currentIndex + 1]); // avoid transition issues
+        router.replace(tabRoutes[currentIndex + 1]);
       } else if (ev.deltaX > 50 && currentIndex > 0) {
         router.replace(tabRoutes[currentIndex - 1]);
       }
     },
   });
-
   gesture.enable(true);
 });
 </script>
@@ -96,6 +93,5 @@ onMounted(() => {
 .gesture-area {
   height: 100%;
   width: 100%;
-  touch-action: pan-y;
 }
 </style>
