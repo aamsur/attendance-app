@@ -1,0 +1,11 @@
+.header-noshadow {
+  --ion-box-shadow: none;
+  --box-shadow: none;
+  box-shadow: none;
+}
+
+.toolbar-border {
+  --border-style: solid;
+  --border-width: 0 0 1.2px 0; /* Only bottom */
+  --border-color: var(--ion-color-light); /* Or any custom value */
+}
