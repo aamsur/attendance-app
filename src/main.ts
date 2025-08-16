@@ -10,10 +10,12 @@ import '@ionic/vue/css/typography.css'
 import './theme/variables.css'
 import './global.css'
 import 'leaflet/dist/leaflet.css'
+import ApiPlugin from './plugins/api.js'
 
 const app = createApp(App)
   .use(IonicVue)
   .use(router)
+  .use(ApiPlugin)
 
 router.isReady().then(() => {
   app.mount('#app')
