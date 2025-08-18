@@ -8,6 +8,7 @@
           <div class="input-wrapper">
             <ion-input
               class="form-input"
+              :class="{ invalid: !username && errorMessage }"
               v-model="username"
               type="text"
               label="Username"
@@ -20,6 +21,7 @@
           <div class="input-wrapper">
             <ion-input
               class="form-input"
+              :class="{ invalid: !password && errorMessage }"
               v-model="password"
               type="password"
               label="Password"
@@ -29,7 +31,21 @@
             />
           </div>
 
-          <ion-button expand="block" class="button-spacing" type="submit">
+          <transition name="fade-slide">
+            <ion-text v-if="errorMessage" color="danger" class="error-text">
+              <IonIcon
+                :icon="alertCircleOutline"
+                style="margin-right: 6px; vertical-align: middle"
+              />
+              {{ errorMessage }}
+            </ion-text>
+          </transition>
+          <ion-button
+            expand="block"
+            class="button-spacing"
+            type="submit"
+            :disabled="isSubmitting"
+          >
             Sign In
           </ion-button>
         </form>
@@ -53,24 +69,31 @@ import {
   IonText,
   useIonRouter,
 } from "@ionic/vue";
-
+import { IonIcon } from "@ionic/vue";
+import { alertCircleOutline } from "ionicons/icons";
 import { ref } from "vue";
-import { useAuth } from '@/composables/useAuth'
+import { useAuth } from "@/composables/useAuth";
 import { useHttp } from "@/composables/useHttp";
+import Cookie from "js-cookie";
+
+const router = useIonRouter();
+const { setUserType } = useAuth();
 
 const username = ref("");
 const password = ref("");
-const router = useIonRouter();
-const { setUserType } = useAuth()
-import Cookie from "js-cookie";
+const errorMessage = ref("");
+const isSubmitting = ref(false);
 
 const { $http_post } = useHttp();
-
 const handleLogin = async () => {
+  errorMessage.value = "";
+
   if (!username.value || !password.value) {
-    console.log("Missing fields");
+    errorMessage.value = "Email dan password harus diisi.";
     return;
   }
+
+  isSubmitting.value = true;
 
   try {
     const response = await $http_post("auth/sign-in", {
@@ -81,25 +104,24 @@ const handleLogin = async () => {
     const { access_token, token_type, user } = response.data.data;
 
     if (!access_token) {
-      console.error("Invalid login");
+      errorMessage.value = "Gagal login. Silakan periksa kembali.";
       return;
     }
 
-    // ✅ Simpan token ke cookie (agar api.js bisa ambil)
     Cookie.set("auth.token", access_token, {
-      expires: 1, // 1 day
+      expires: 1,
       secure: true,
       sameSite: "Lax",
     });
 
-    // Simpan user-info (opsional)
     localStorage.setItem("user", JSON.stringify(user));
 
-    // Arahkan ke halaman
     setUserType("tabs");
     router.push("/tabs/check-in");
-  } catch (error) {
-    console.error("Login failed:", error?.response?.data?.message || error.message);
+  } catch (error: any) {
+    errorMessage.value = error?.response?.data?.message || "Login gagal.";
+  } finally {
+    isSubmitting.value = false;
   }
 };
 
@@ -150,5 +172,41 @@ a {
 
 .button-spacing {
   margin-top: 24px;
+}
+
+/* Animasi muncul */
+.fade-slide-enter-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-slide-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.fade-slide-enter-to,
+.fade-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.error-text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: var(--ion-color-danger);
+}
+
+ion-input.invalid {
+  --border-color: var(--ion-color-danger);
+  --highlight-color-focused: var(--ion-color-danger);
+  --highlight-color: var(--ion-color-danger);
+  transition: border-color 0.2s ease;
 }
 </style>
