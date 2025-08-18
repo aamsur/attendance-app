@@ -99,12 +99,29 @@ import {
 } from "@ionic/vue";
 
 import { useAuth } from "@/composables/useAuth";
+import { useHttp } from "@/composables/useHttp";
+import { onMounted, ref } from "vue";
+
 const router = useIonRouter();
 const { logout } = useAuth();
+const { $http_get } = useHttp();
+
+const profile = ref(null);
+
+onMounted(async () => {
+  try {
+    const response = await $http_get("/auth/me");
+    profile.value = response.data;
+    console.log("Profile loaded", profile.value);
+  } catch (err) {
+    console.error("Failed to fetch profile:", err);
+  }
+});
 
 const handleSignOut = () => {
   logout(); // ✅ updates layout and session
 };
+
 </script>
 
 <style scoped>

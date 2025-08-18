@@ -56,31 +56,50 @@ import {
 
 import { ref } from "vue";
 import { useAuth } from '@/composables/useAuth'
+import { useHttp } from "@/composables/useHttp";
 
 const username = ref("");
 const password = ref("");
 const router = useIonRouter();
 const { setUserType } = useAuth()
+import Cookie from "js-cookie";
 
-const handleLogin = () => {
+const { $http_post } = useHttp();
+
+const handleLogin = async () => {
   if (!username.value || !password.value) {
     console.log("Missing fields");
     return;
   }
 
-  let userType = "tabs"; // default
-  if (username.value === "admin" && password.value === "admin") {
-    userType = "menu";
-  }
+  try {
+    const response = await $http_post("auth/sign-in", {
+      email: username.value,
+      password: password.value,
+    });
 
-  sessionStorage.setItem("userType", userType);
-  console.log("Logged in as:", username.value, "| Type:", userType);
+    const { access_token, token_type, user } = response.data.data;
 
-  setUserType(userType)
-  if (userType === "tabs") {
+    if (!access_token) {
+      console.error("Invalid login");
+      return;
+    }
+
+    // ✅ Simpan token ke cookie (agar api.js bisa ambil)
+    Cookie.set("auth.token", access_token, {
+      expires: 1, // 1 day
+      secure: true,
+      sameSite: "Lax",
+    });
+
+    // Simpan user-info (opsional)
+    localStorage.setItem("user", JSON.stringify(user));
+
+    // Arahkan ke halaman
+    setUserType("tabs");
     router.push("/tabs/check-in");
-  } else {
-    router.push("/landing");
+  } catch (error) {
+    console.error("Login failed:", error?.response?.data?.message || error.message);
   }
 };
 
